@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace DataMigrator
 {
@@ -9,12 +10,25 @@ namespace DataMigrator
     {
       //setup up dependency injection
       ServiceProvider serviceProvider = new ServiceCollection()
-          .AddLogging()
-          .AddSingleton<IPostgresWorker, PostgresWorker>()
-          .AddSingleton<ISQLServerWorker, SQLServerWorker>()
-          .BuildServiceProvider();
+        .AddLogging()
+        .AddSingleton<IPostgresWorker, PostgresWorker>()
+        .AddSingleton<ISQLServerWorker, SQLServerWorker>()
+        .BuildServiceProvider();
 
-      Console.WriteLine("hi");
+      // configure logging
+      serviceProvider
+        .GetService<ILoggerFactory>()
+        .AddConsole(LogLevel.Debug);
+
+      ILogger<Program> logger = serviceProvider
+        .GetService<ILoggerFactory>()
+        .CreateLogger<Program>();
+
+      logger
+        .LogDebug("Starting application");
+
+      Console
+        .WriteLine("hi");
     }
   }
 }
