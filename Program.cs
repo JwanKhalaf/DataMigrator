@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
+﻿using System;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DataMigrator
 {
@@ -7,16 +7,14 @@ namespace DataMigrator
   {
     static void Main(string[] args)
     {
-      CreateHostBuilder(args)
-        .Build()
-        .Run();
-    }
+      //setup our DI
+      var serviceProvider = new ServiceCollection()
+          .AddLogging()
+          .AddSingleton<IPostgresWorker, PostgresWorker>()
+          .AddSingleton<ISQLServerWorker, SQLServerWorker>()
+          .BuildServiceProvider();
 
-    public static IHostBuilder CreateHostBuilder(string[] args) =>
-      Host.CreateDefaultBuilder(args)
-        .ConfigureWebHostDefaults(webBuilder =>
-        {
-          webBuilder.UseStartup<Startup>();
-        });
+      Console.WriteLine("hi");
+    }
   }
 }
