@@ -7,8 +7,8 @@ namespace DataMigrator
   {
     static void Main(string[] args)
     {
-      //setup our DI
-      var serviceProvider = new ServiceCollection()
+      //setup up dependency injection
+      ServiceProvider serviceProvider = new ServiceCollection()
           .AddLogging()
           .AddSingleton<IPostgresWorker, PostgresWorker>()
           .AddSingleton<ISQLServerWorker, SQLServerWorker>()
