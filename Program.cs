@@ -10,19 +10,15 @@ namespace DataMigrator
     {
       //setup up dependency injection
       ServiceProvider serviceProvider = new ServiceCollection()
-        .AddLogging()
+        .AddLogging(logging =>
+        {
+          logging.AddConsole();
+        })
         .AddSingleton<IPostgresWorker, PostgresWorker>()
         .AddSingleton<ISQLServerWorker, SQLServerWorker>()
         .BuildServiceProvider();
 
-      // configure logging
-      serviceProvider
-        .GetService<ILoggerFactory>()
-        .AddConsole(LogLevel.Debug);
-
-      ILogger<Program> logger = serviceProvider
-        .GetService<ILoggerFactory>()
-        .CreateLogger<Program>();
+      ILogger<Program> logger = serviceProvider.GetService<ILogger<Program>>();
 
       logger
         .LogDebug("Starting application");
