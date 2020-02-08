@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using DataMigrator.Config;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -31,15 +32,9 @@ namespace DataMigrator
 
       ILogger<Program> logger = serviceProvider.GetService<ILogger<Program>>();
 
-      var temp = serviceProvider.GetService<ISQLServerWorker>();
+      ISQLServerWorker sqlServerWorker = serviceProvider.GetService<ISQLServerWorker>();
 
-      temp.GetArtists();
-
-      logger
-        .LogDebug("Starting application");
-
-      Console
-        .WriteLine("hi");
+      List<Artist> artists = sqlServerWorker.GetArtists();
     }
   }
 }

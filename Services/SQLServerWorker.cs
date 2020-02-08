@@ -1,4 +1,5 @@
 using DataMigrator.Config;
+using DataMigrator.Models;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
@@ -15,6 +16,8 @@ public class SQLServerWorker : ISQLServerWorker
 
   public List<Artist> GetArtists()
   {
+    List<Artist> artists = new List<Artist>();
+
     using (SqlConnection connection = new SqlConnection(_databaseOptions.SqlServerConnectionString))
     {
       string query = "select * from Artists;";
@@ -31,9 +34,21 @@ public class SQLServerWorker : ISQLServerWorker
         SqlDataReader reader = command.ExecuteReader();
         while (reader.Read())
         {
-          Console.WriteLine("\t{0}\t{1}\t{2}",
-              reader[0], reader[1], reader[2]);
+          Artist artist = new Artist();
+          artist.FirstName = reader[1].ToString().Trim();
+          artist.LastName = reader[2].ToString().Trim();
+
+          ArtistSlug artistSlug = new ArtistSlug();
+          artistSlug.Name = reader[3].ToString().Trim();
+
+          artist.Slugs = new List<ArtistSlug>
+          {
+            artistSlug
+          };
+
+          artists.Add(artist);
         }
+
         reader.Close();
       }
       catch (Exception ex)
@@ -43,6 +58,6 @@ public class SQLServerWorker : ISQLServerWorker
       Console.ReadLine();
     }
 
-    return new List<Artist>();
+    return artists;
   }
 }
