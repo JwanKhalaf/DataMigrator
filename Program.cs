@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using DataMigrator.Config;
+using DataMigrator.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -35,6 +36,14 @@ namespace DataMigrator
       ISQLServerWorker sqlServerWorker = serviceProvider.GetService<ISQLServerWorker>();
 
       List<Artist> artists = sqlServerWorker.GetArtists();
+
+      foreach (var artist in artists)
+      {
+        List<Lyric> lyrics = sqlServerWorker.GetLyricForArtist(artist.Id);
+        artist.Lyrics = lyrics;
+      }
+
+      Console.ReadLine();
     }
   }
 }
