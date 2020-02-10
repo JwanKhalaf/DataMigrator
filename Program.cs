@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using DataMigrator.Config;
 using DataMigrator.Models;
 using Microsoft.Extensions.Configuration;
@@ -37,10 +39,29 @@ namespace DataMigrator
 
       List<Artist> artists = sqlServerWorker.GetArtists();
 
-      foreach (var artist in artists)
+      foreach (Artist artist in artists)
       {
         List<Lyric> lyrics = sqlServerWorker.GetLyricForArtist(artist.Id);
+
         artist.Lyrics = lyrics;
+      }
+
+      foreach (Artist artist in artists)
+      {
+        string artistSlug = artist.Slugs.First().Name;
+
+        string filePath = Directory.GetCurrentDirectory() + "\\Images\\" + artistSlug + ".jpg";
+
+        if (File.Exists(filePath))
+        {
+          ArtistImage artistImage = new ArtistImage();          
+          artistImage.Data = File.ReadAllBytes(filePath);          
+
+          artist.Image = artistImage;
+        } else
+        {
+          Console.WriteLine($"{artistSlug} has no photo!");
+        }
       }
 
       Console.ReadLine();
