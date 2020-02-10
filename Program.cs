@@ -54,8 +54,8 @@ namespace DataMigrator
 
         if (File.Exists(filePath))
         {
-          ArtistImage artistImage = new ArtistImage();          
-          artistImage.Data = File.ReadAllBytes(filePath);          
+          ArtistImage artistImage = new ArtistImage();
+          artistImage.Data = File.ReadAllBytes(filePath);
 
           artist.Image = artistImage;
         } else
@@ -63,6 +63,11 @@ namespace DataMigrator
           Console.WriteLine($"{artistSlug} has no photo!");
         }
       }
+
+      // writing to postgres
+      IPostgresWorker postgresWorker = serviceProvider.GetService<IPostgresWorker>();
+
+      postgresWorker.SaveArtists(artists);
 
       Console.ReadLine();
     }

@@ -38,6 +38,7 @@ public class SQLServerWorker : ISQLServerWorker
           artist.Id = Convert.ToInt32(reader[0]);
           artist.FirstName = Convert.ToString(reader[1]).Trim();
           artist.LastName = Convert.ToString(reader[2]).Trim();
+          artist.IsApproved = Convert.ToBoolean(reader[5]);
 
           ArtistSlug artistSlug = new ArtistSlug();
           artistSlug.Name = Convert.ToString(reader[3]).Trim();

@@ -9,6 +9,8 @@ public class Artist
 
   public string LastName { get; set; }
 
+  public bool IsApproved { get; set; }
+
   public ArtistImage Image { get; set; }
 
   public List<ArtistSlug> Slugs { get; set; }
