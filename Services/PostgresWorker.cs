@@ -1,4 +1,5 @@
 using DataMigrator.Config;
+using DataMigrator.Models;
 using Microsoft.Extensions.Options;
 using Npgsql;
 using System;
@@ -17,6 +18,8 @@ public class PostgresWorker : IPostgresWorker
   {
     using (NpgsqlConnection connection = new NpgsqlConnection(_databaseOptions.PostgresConnectionString))
     {
+      connection.Open();
+
       foreach (Artist artist in artists)
       {
         string firstName = artist.FirstName;
@@ -27,7 +30,7 @@ public class PostgresWorker : IPostgresWorker
         DateTime createdAt = DateTime.UtcNow;
         bool isDeleted = false;
 
-        NpgsqlCommand command = new NpgsqlCommand("insert into artists (first_name, last_name, full_name, is_approved, user_id, created_at, is_deleted) VALUES (@first_name, @last_name, @full_name, @is_approved, @user_id, @created_at, @is_deleted)", connection);
+        NpgsqlCommand command = new NpgsqlCommand("insert into artists (first_name, last_name, full_name, is_approved, user_id, created_at, is_deleted) VALUES (@first_name, @last_name, @full_name, @is_approved, @user_id, @created_at, @is_deleted) returning id", connection);
 
         command.Parameters.AddWithValue("first_name", firstName);
         command.Parameters.AddWithValue("last_name", lastName);
@@ -37,9 +40,25 @@ public class PostgresWorker : IPostgresWorker
         command.Parameters.AddWithValue("created_at", createdAt);
         command.Parameters.AddWithValue("is_deleted", isDeleted);
 
-        connection.Open();
-        command.ExecuteNonQuery();
-        connection.Close();
+        object identity = command.ExecuteScalar();
+        artist.Id = (int)identity;
+
+        foreach (ArtistSlug artistSlug in artist.Slugs)
+        {
+          string artistSlugName = artistSlug.Name;
+          bool isArtistSlugPrimary = true;
+          DateTime artistSlugCreatedAt = DateTime.UtcNow;
+          bool isArtistSlugDeleted = false;
+
+          command = new NpgsqlCommand("insert into artist_slugs (name, is_primary, created_at, is_deleted, artist_id) values (@name, @is_primary, @created_at, @is_deleted, @artist_id)", connection);
+          command.Parameters.AddWithValue("name", artistSlugName);
+          command.Parameters.AddWithValue("is_primary", isArtistSlugPrimary);
+          command.Parameters.AddWithValue("created_at", artistSlugCreatedAt);
+          command.Parameters.AddWithValue("is_deleted", isArtistSlugDeleted);
+          command.Parameters.AddWithValue("artist_id", artist.Id);
+
+          command.ExecuteNonQuery();
+        }
       }
     }
   }
