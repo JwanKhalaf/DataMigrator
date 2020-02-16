@@ -69,7 +69,7 @@ namespace DataMigrator
 
       postgresWorker.SaveArtists(artists);
 
-      Console.ReadLine();
+      Console.WriteLine("Done.");
     }
   }
 }

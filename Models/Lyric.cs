@@ -10,6 +10,8 @@ namespace DataMigrator.Models
 
     public string Body { get; set; }
 
+    public bool IsApproved { get; set; }
+
     public List<LyricSlug> Slugs { get; set; }
   }
 }

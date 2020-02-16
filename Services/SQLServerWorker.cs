@@ -87,6 +87,7 @@ public class SQLServerWorker : ISQLServerWorker
           lyric.Id = Convert.ToInt32(reader[0]);
           lyric.Title = Convert.ToString(reader[1]).Trim();
           lyric.Body = Convert.ToString(reader[3]).Trim();
+          lyric.IsApproved = Convert.ToBoolean(reader[6]);
 
           LyricSlug lyricSlug = new LyricSlug();
           lyricSlug.Name = Convert.ToString(reader[2]).Trim();

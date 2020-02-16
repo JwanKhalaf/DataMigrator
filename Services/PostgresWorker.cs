@@ -26,7 +26,7 @@ public class PostgresWorker : IPostgresWorker
         string lastName = artist.LastName;
         string fullName = $"{firstName} {lastName}";
         bool isApproved = artist.IsApproved;
-        string userId = "eb600251-1fdd-4c2e-bee0-a9dca87a271a";
+        string userId = "6d9519c5-1c10-4ca5-8d26-dc8102c2294f";
         DateTime createdAt = DateTime.UtcNow;
         bool isDeleted = false;
 
@@ -40,8 +40,19 @@ public class PostgresWorker : IPostgresWorker
         command.Parameters.AddWithValue("created_at", createdAt);
         command.Parameters.AddWithValue("is_deleted", isDeleted);
 
-        object identity = command.ExecuteScalar();
-        artist.Id = (int)identity;
+        object artistIdentity = command.ExecuteScalar();
+        artist.Id = (int)artistIdentity;
+
+        if (artist.Image != null)
+        {
+          command = new NpgsqlCommand("insert into artist_images (data, created_at, artist_id) values (@data, @created_at, @artist_id)", connection);
+
+          command.Parameters.AddWithValue("data", artist.Image.Data);
+          command.Parameters.AddWithValue("created_at", createdAt);
+          command.Parameters.AddWithValue("artist_id", artist.Id);
+
+          command.ExecuteNonQuery();
+        }
 
         foreach (ArtistSlug artistSlug in artist.Slugs)
         {
@@ -58,6 +69,51 @@ public class PostgresWorker : IPostgresWorker
           command.Parameters.AddWithValue("artist_id", artist.Id);
 
           command.ExecuteNonQuery();
+        }
+
+        foreach (Lyric lyric in artist.Lyrics)
+        {
+          bool isLyricApproved = lyric.IsApproved;
+
+          if (isLyricApproved)
+          {
+            string lyricTitle = lyric.Title;
+            string lyricBody = lyric.Body;
+            string user_id = "6d9519c5-1c10-4ca5-8d26-dc8102c2294f";
+            DateTime lyricCreatedAt = DateTime.UtcNow;
+            bool isLyricDeleted = false;
+
+
+            command = new NpgsqlCommand("insert into lyrics (title, body, user_id, created_at, is_deleted, is_approved, artist_id) values (@title, @body, @user_id, @created_at, @is_deleted, @is_approved, @artist_id) returning id", connection);
+
+            command.Parameters.AddWithValue("title", lyricTitle);
+            command.Parameters.AddWithValue("body", lyricBody);
+            command.Parameters.AddWithValue("user_id", user_id);
+            command.Parameters.AddWithValue("created_at", lyricCreatedAt);
+            command.Parameters.AddWithValue("is_deleted", isLyricDeleted);
+            command.Parameters.AddWithValue("is_approved", isLyricApproved);
+            command.Parameters.AddWithValue("artist_id", artist.Id);
+
+            object lyricIdentity = command.ExecuteScalar();
+            lyric.Id = (int)lyricIdentity;
+
+            foreach (LyricSlug lyricSlug in lyric.Slugs)
+            {
+              string lyricSlugName = lyricSlug.Name;
+              bool isLyricSlugPrimary = true;
+              DateTime lyricSlugCreatedAt = DateTime.UtcNow;
+              bool isLyricSlugDeleted = false;
+
+              command = new NpgsqlCommand("insert into lyric_slugs (name, is_primary, created_at, is_deleted, lyric_id) values (@name, @is_primary, @created_at, @is_deleted, @lyric_id)", connection);
+              command.Parameters.AddWithValue("name", lyricSlugName);
+              command.Parameters.AddWithValue("is_primary", isLyricSlugPrimary);
+              command.Parameters.AddWithValue("created_at", lyricSlugCreatedAt);
+              command.Parameters.AddWithValue("is_deleted", isLyricSlugDeleted);
+              command.Parameters.AddWithValue("lyric_id", lyric.Id);
+
+              command.ExecuteNonQuery();
+            }
+          }
         }
       }
     }
